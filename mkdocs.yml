@@ -1,0 +1,36 @@
+site_name: rewrite-sample
+
+repo_name: Shuttl-Tech/rewrite-sample
+repo_url: https://github.com/Shuttl-Tech/rewrite-sample/
+
+site_url: https://docs.shuttl.xyz/rewrite-sample
+site_description: A baseline starting point for python projects
+site_author: Engineering Team
+
+theme:
+  name: 'material'
+  palette:
+    primary: 'White'
+    accent: 'Teal'
+
+markdown_extensions:
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+  - markdown.extensions.def_list

@@ -1,0 +1,27 @@
+name: "Publish schema changes"
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed # PR merged in master branch
+    paths:
+      - 'db/schema.sql' # Once schema file modified
+
+jobs:
+  schema_action:
+    runs-on: ubuntu-latest
+    name: A job to identify schema changes
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Slack Notification
+      uses: rtCamp/action-slack-notify@master
+      env:
+        SLACK_WEBHOOK: "https://hooks.slack.com/services/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"
+        SITE_NAME: ${{ github.repository }}
+        SLACK_TITLE: "Upcoming database changes"
+        SLACK_MESSAGE: "*_Repository:_* ${{ github.repository}}\n\n
+                       *_Pull request:_* ${{ github.event.pull_request._links.html.href }}\n\n
+                       *_Title:_* ${{ github.event.pull_request.title }}"

@@ -1,0 +1,22 @@
+from 421602853056.dkr.ecr.ap-south-1.amazonaws.com/app/dbmate-docker as dbmate
+from 421602853056.dkr.ecr.ap-south-1.amazonaws.com/base/python:3.7-slim
+
+run pip install poetry
+
+add pyproject.toml /tmp/app/
+add poetry.lock /tmp/app/
+
+run cd /tmp/app                                          \
+   && poetry config virtualenvs.create false             \
+   && poetry install --no-dev --no-interaction --no-ansi \
+   && pip uninstall --yes poetry
+
+add . /tmp/app
+
+run pip install gunicorn==19.9.0  \
+   && cd /tmp/app                 \
+   && pip install /tmp/app        \
+   && rm -rf /tmp/app
+
+add db /migrations/db
+copy --from=dbmate /dbmate /usr/local/bin/dbmate

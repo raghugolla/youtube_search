@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  sample_db_dev:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: shuttl_user
+      POSTGRES_USER: shuttl_user
+      POSTGRES_DB: sample_dev
+
+  sample_dev_dbmate:
+    build: ./dbmate-docker
+    environment:
+      DATABASE_URL: postgres://shuttl_user:shuttl_user@sample_db_dev:5432/sample_dev?sslmode=disable
+    volumes:
+      - ./:/usr/data
+    depends_on:
+      - sample_db_dev
+    working_dir: /usr/data
+    command: bash -c "dbmate wait && dbmate up && dbmate dump"
+
+  sample_web:
+    build: ./
+    volumes:
+      - ./:/app
+    environment:
+      - FLASK_APP=sample/app.py
+      - SAMPLE_DB_URL=sample_db_dev
+      - SAMPLE_DB_USER=shuttl_user
+      - SAMPLE_DB_PASS=shuttl_user
+      - SAMPLE_DB_NAME=sample_dev
+
+      # Paul's access keys, full access to SQS. Using these until we've
+      # got a dev account.
+      #
+      # Plz dont abuse.
+      - AWS_ACCESS_KEY_ID=AKIAI7VPRM764EIQI3RQ
+      - AWS_SECRET_ACCESS_KEY=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
+
+      - SQS_QUEUE_PREFIX=dev-
+      - SQS_REGION=ap-south-1
+      - SQS_ENDPOINT_URL=http://sqsmockserver:5000
+      # Staging Sentry shuttl-x7
+      - SENTRY_DSN=https://6dbe5999da094a67a39a724115d7c776@sentry.io/1336508
+
+    depends_on:
+      - sample_dev_dbmate
+    ports:
+      - "9198:5000"
+    command: flask run --host="0.0.0.0"
+
+  sample_worker:
+    build: ./
+    volumes:
+      - ./:/app
+    environment:
+      - FLASK_APP=sample/app.py
+      - SAMPLE_DB_URL=sample_db_dev
+      - SAMPLE_DB_USER=shuttl_user
+      - SAMPLE_DB_PASS=shuttl_user
+      - SAMPLE_DB_NAME=sample_dev
+      - SQS_QUEUE_PREFIX=dev-
+      - SQS_REGION=ap-south-1
+      - SQS_ENDPOINT_URL=http://sqsmockserver:5000
+      - AWS_ACCESS_KEY_ID=AKIAI7VPRM764EIQI3RQ
+      - AWS_SECRET_ACCESS_KEY=z+d1U6+xM8G3HfwdVtEtuOQOGRmBS4OVWyzXCztN
+    depends_on:
+      - sample_dev_dbmate
+      - sqs
+    command: python -m sample.worker.processor
+
+  sqsmockserver:
+    # mocks sqs contracts so that we don't need to setup and manage actual sqs queues for development purposes
+    # to use it specify `endpoint_url=$host:$port` in boto client constructor
+    image: picadoh/motocker
+    environment:
+      - MOTO_SERVICE=sqs
+    ports:
+      - "9600:5000"
+
+  sqs:
+    # This sqs initialization script will setup/create these queues in our sqs mock server
+    # so that they are ready to use.
+    # Note: Our services should not handle creating queues if they do not exist on their own.
+    # The SRE will manage that for us in production
+    build: ./sqs
+    # command takes a list of quenames
+    command: setup_sqs.py dev-default dev-sample
+    environment:
+      - SQS_REGION=ap-south-1
+      - SQS_ENDPOINT_URL=http://sqsmockserver:5000
+    depends_on:
+      - sqsmockserver

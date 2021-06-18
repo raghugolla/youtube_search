@@ -1,0 +1,59 @@
+---
+kind: pipeline
+name: Default
+clone:
+  disable: true
+
+steps:
+  - name: clone
+    image: 421602853056.dkr.ecr.ap-south-1.amazonaws.com/alpine/git:latest
+    commands:
+      - git clone https://github.com/Shuttl-Tech/rewrite-sample.git .
+      - git checkout $DRONE_COMMIT
+
+  - name: Test
+    image: 421602853056.dkr.ecr.ap-south-1.amazonaws.com/base/python:3.7-slim
+    commands:
+      - pip install poetry
+      - poetry config virtualenvs.create false
+      - poetry install --no-interaction --no-ansi --no-root
+      - pytest -m "not integration"
+      - pip install black==19.10b0
+      - black --check .
+    when:
+      branch:
+        - master
+      event:
+        - push
+        - pull_request
+
+  - name: Publish
+    image: 421602853056.dkr.ecr.ap-south-1.amazonaws.com/drone/plugin-ecr:latest
+    settings:
+      dockerfile: Dockerfile.prod
+      region: ap-south-1
+      repo: app/${DRONE_REPO_NAME##rewrite-}
+      tags:
+        - "${DRONE_COMMIT_SHA:0:8}"
+    when:
+      event:
+        - push
+
+  - name: Documentation
+    image: 421602853056.dkr.ecr.ap-south-1.amazonaws.com/drone/plugin-docmaker
+    settings:
+      iam_role_arn: arn:aws:iam::421602853056:role/DocmakerRuntimeRole
+      bucket: docs.shuttl.xyz
+      site_path: rewrite-sample
+    when:
+      branch:
+        - master
+      event:
+        - push
+
+  - name: Deploy
+    image: 421602853056.dkr.ecr.ap-south-1.amazonaws.com/utils/deployer:latest
+    pull: always
+    when:
+      event:
+        - promote

@@ -1,0 +1,78 @@
+name       = "sample"
+depends_on = ["service1", "service2"]
+image      = "app/sample"
+image_tag  = build.sha
+
+env = {
+  SAMPLE_DB_NAME = app.database_name
+}
+
+configuration {
+  paths = [app.path.config.main]
+}
+
+secrets {
+  policies = app.policies
+
+  source {
+    key      = app.path.secret.db
+    mappings = {
+      SAMPLE_DB_USER = "username"
+      SAMPLE_DB_PASS = "password"
+    }
+  }
+
+  source {
+    key      = app.path.secret.sentry
+    mappings = {
+      SENTRY_DSN = "dsn"
+    }
+  }
+
+  source {
+    key      = app.path.secret.aws
+    mappings = {
+      AWS_ACCESS_KEY_ID     = "access_key"
+      AWS_SECRET_ACCESS_KEY = "secret_key"
+    }
+  }
+
+    source {
+    key      = "secret/data/app-sample"
+  }
+}
+
+web api {
+  command        = serve_wsgi("sample.app:app")
+  service_name   = "sample"
+
+  check "api" {
+    path = "/health"
+  }
+
+  check "database" {
+    path               = "/dbhealth"
+    restart_on_failure = true
+  }
+}
+
+worker processor {
+  command = pymodule("sample.worker.processor")
+}
+
+cron processor {
+  command  = pymodule("sample.cron.process_cron")
+  schedule = "*/2 * * * *"
+}
+
+script migration {
+  work_dir = "/migrations"
+  command  = exec("/usr/local/bin/dbmate", "up")
+
+  env = {
+    DATABASE_HOST     = "SAMPLE_DB_URL"
+    DATABASE_NAME     = "SAMPLE_DB_NAME"
+    DATABASE_PASSWORD = "SAMPLE_DB_PASS"
+    DATABASE_USER     = "SAMPLE_DB_USER"
+  }
+}
