@@ -1,10 +1,10 @@
-name       = "sample"
-depends_on = ["service1", "service2"]
-image      = "app/sample"
+name       = "youtube_search"
+depends_on = []
+image      = "app/youtube_search"
 image_tag  = build.sha
 
 env = {
-  SAMPLE_DB_NAME = app.database_name
+  YOUTUBE_DB_NAME = app.database_name
 }
 
 configuration {
@@ -17,8 +17,8 @@ secrets {
   source {
     key      = app.path.secret.db
     mappings = {
-      SAMPLE_DB_USER = "username"
-      SAMPLE_DB_PASS = "password"
+      YOUTUBE_DB_USER = "username"
+      NYOUTUBE_DB_PASS = "password"
     }
   }
 
@@ -29,22 +29,14 @@ secrets {
     }
   }
 
-  source {
-    key      = app.path.secret.aws
-    mappings = {
-      AWS_ACCESS_KEY_ID     = "access_key"
-      AWS_SECRET_ACCESS_KEY = "secret_key"
-    }
-  }
-
     source {
-    key      = "secret/data/app-sample"
+    key      = "secret/data/youtube_search"
   }
 }
 
 web api {
-  command        = serve_wsgi("sample.app:app")
-  service_name   = "sample"
+  command        = serve_wsgi("youtube.app:app")
+  service_name   = "youtube_search"
 
   check "api" {
     path = "/health"
@@ -56,12 +48,9 @@ web api {
   }
 }
 
-worker processor {
-  command = pymodule("sample.worker.processor")
-}
 
 cron processor {
-  command  = pymodule("sample.cron.process_cron")
+  command  = pymodule("youtube_search.cron.search")
   schedule = "*/2 * * * *"
 }
 
@@ -70,9 +59,9 @@ script migration {
   command  = exec("/usr/local/bin/dbmate", "up")
 
   env = {
-    DATABASE_HOST     = "SAMPLE_DB_URL"
-    DATABASE_NAME     = "SAMPLE_DB_NAME"
-    DATABASE_PASSWORD = "SAMPLE_DB_PASS"
-    DATABASE_USER     = "SAMPLE_DB_USER"
+    DATABASE_HOST     = "YOUTUBE_DB_URL"
+    DATABASE_NAME     = "YOUTUBE_DB_NAME"
+    DATABASE_PASSWORD = "YOUTUBE_DB_PASS"
+    DATABASE_USER     = "YOUTUBE_DB_USER"
   }
 }

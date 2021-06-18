@@ -1,11 +1,11 @@
-site_name: rewrite-sample
+site_name: youtube
 
-repo_name: Shuttl-Tech/rewrite-sample
-repo_url: https://github.com/Shuttl-Tech/rewrite-sample/
+repo_name: youtube
+repo_url: https://github.com/raghugolla/youtube.git
 
-site_url: https://docs.shuttl.xyz/rewrite-sample
+site_url: https://github.com/raghugolla/youtube.git
 site_description: A baseline starting point for python projects
-site_author: Engineering Team
+site_author: Raghu Golla
 
 theme:
   name: 'material'

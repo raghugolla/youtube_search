@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sample.utils.flask import APIFlask
+from youtube_search.utils.flask import APIFlask
 from flask_keepincheck import HealthCheck
 
 db = SQLAlchemy()

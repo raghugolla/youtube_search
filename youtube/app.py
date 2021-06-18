@@ -1,4 +1,4 @@
-from sample import create_app
+from youtube_search import create_app
 
 app = create_app()
 

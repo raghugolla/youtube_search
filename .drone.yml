@@ -8,7 +8,7 @@ steps:
   - name: clone
     image: 421602853056.dkr.ecr.ap-south-1.amazonaws.com/alpine/git:latest
     commands:
-      - git clone https://github.com/Shuttl-Tech/rewrite-sample.git .
+      - git clone https://github.com/raghugolla/youtube.git .
       - git checkout $DRONE_COMMIT
 
   - name: Test
@@ -44,7 +44,7 @@ steps:
     settings:
       iam_role_arn: arn:aws:iam::421602853056:role/DocmakerRuntimeRole
       bucket: docs.shuttl.xyz
-      site_path: rewrite-sample
+      site_path: rewrite-youtube
     when:
       branch:
         - master

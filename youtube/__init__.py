@@ -3,14 +3,13 @@ import datadog
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
-from sample.store import configure_db_with_app
-from sample.utils.config import Config
-from sample.utils.consul_patch import requests_use_srv_records
+from youtube_search.store import configure_db_with_app
+from youtube_search.utils.config import Config
+from youtube_search.utils.consul_patch import requests_use_srv_records
 
 # local imports
-from sample.utils.flask import APIFlask
-from sample.utils.log import LOG
-from sample.worker import init_worker
+from youtube_search.utils.flask import APIFlask
+from youtube_search.utils.log import LOG
 from ddtrace import config as dd_config
 from ddtrace import patch as ddtrace_patch
 
@@ -21,7 +20,7 @@ def create_app() -> APIFlask:
     dd_config.requests["distributed_tracing"] = True
     ddtrace_patch(requests=True, flask=True)
 
-    LOG.debug("sample.start")
+    LOG.debug("youtube_search.start")
     app = APIFlask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
     datadog.initialize(statsd_host=getenv("NET_BRIDGE_GW_IP"))
@@ -33,13 +32,11 @@ def create_app() -> APIFlask:
 
     requests_use_srv_records()
 
-    init_worker()
-
     return app
 
 
 def _register_all_blueprints(app: APIFlask):
-    from sample.api.sample import blueprint
+    from youtube_search.api.search import blueprint
 
     app.register_blueprint(blueprint)
 
