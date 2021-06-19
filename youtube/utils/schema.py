@@ -6,7 +6,7 @@ from flask import request
 from stringcase import snakecase
 from voluptuous import Invalid, Schema
 
-from youtube_search.utils.flask import APIError, APIResponse
+from youtube.utils.flask import APIError, APIResponse
 
 
 def _mk_error_payload(e: Invalid) -> APIError:

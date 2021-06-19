@@ -1,17 +1,16 @@
 from os import getenv
+
 import datadog
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-
-from youtube_search.store import configure_db_with_app
-from youtube_search.utils.config import Config
-from youtube_search.utils.consul_patch import requests_use_srv_records
-
-# local imports
-from youtube_search.utils.flask import APIFlask
-from youtube_search.utils.log import LOG
 from ddtrace import config as dd_config
 from ddtrace import patch as ddtrace_patch
+
+from youtube.store import configure_db_with_app
+from youtube.utils.config import Config
+from youtube.utils.consul_patch import requests_use_srv_records
+
+# local imports
+from youtube.utils.flask import APIFlask
+from youtube.utils.log import LOG
 
 
 def create_app() -> APIFlask:
@@ -20,11 +19,10 @@ def create_app() -> APIFlask:
     dd_config.requests["distributed_tracing"] = True
     ddtrace_patch(requests=True, flask=True)
 
-    LOG.debug("youtube_search.start")
+    LOG.debug("youtube.start")
     app = APIFlask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
     datadog.initialize(statsd_host=getenv("NET_BRIDGE_GW_IP"))
-    sentry_sdk_initialize()
 
     # NOTE: Order matters here
     configure_db_with_app(app)
@@ -36,14 +34,9 @@ def create_app() -> APIFlask:
 
 
 def _register_all_blueprints(app: APIFlask):
-    from youtube_search.api.search import blueprint
+    from youtube.api import search
 
-    app.register_blueprint(blueprint)
-
-
-def sentry_sdk_initialize():
-    # dsn = '{PROTOCOL}://{PUBLIC_KEY}@{HOST}/{PROJECT_ID}'
-    sentry_sdk.init(dsn=Config.SENTRY_DSN, integrations=[FlaskIntegration()])
+    app.register_blueprint(search.blueprint)
 
 
 def _configure_datadog_filters():
