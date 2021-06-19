@@ -1,6 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
-from youtube_search.utils.flask import APIFlask
 from flask_keepincheck import HealthCheck
+from flask_sqlalchemy import SQLAlchemy
+
+from youtube.utils.flask import APIFlask
 
 db = SQLAlchemy()
 healthcheck = HealthCheck()
