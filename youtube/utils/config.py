@@ -17,12 +17,9 @@ class Config:
     Common configurations
     """
 
-    LOG_LEVEL = environ.get("youtube_search_LOG_LEVEL", "DEBUG")
-    LOG_FORMAT = environ.get("youtube_search_LOG_FORMAT", "console").lower()
+    LOG_LEVEL = environ.get("YOUTUBE_LOG_LEVEL", "DEBUG")
+    LOG_FORMAT = environ.get("YOUTUBE_LOG_FORMAT", "console").lower()
     SQLALCHEMY_ECHO = environ.get("SQLALCHEMY_ECHO", "false") == "true"
-
-    STATSD_API_KEY = environ.get("youtube_search_STATSD_API_KEY")
-    STATSD_APP_KEY = environ.get("youtube_search_STATSD_APP_KEY")
 
     db_url = environ.get("YOUTUBE_DB_URL")
     db_user = environ.get("YOUTUBE_DB_USER")
